@@ -50,11 +50,30 @@ object Assignment2A:
   /** Problem 1-1: Lookup in BST
    */
   @tailrec
-  def lookup[K,V](t: BST[K,V], cmp: (K,K) => Int, key: K): IOption[V] = ???
+  def lookup[K,V](t: BST[K,V], cmp: (K,K) => Int, key: K): IOption[V] = {
+    t match {
+      case Leaf => INone
+      case Node(k, v, lt, rt) =>
+        k match {
+          case _ if cmp(key, k) == 0 => ISome(v)
+          case _ if cmp(key, k) < 0 => lookup(lt, cmp, key)
+          case _ => lookup(rt, cmp, key)
+        }
+    }
+  }
     
   /** Problem 1-2: Insert in BST
    */
-  def insert[K,V](t: BST[K,V], cmp: (K,K) => Int, key: K, value: V): BST[K,V] = ???
+  def insert[K,V](t: BST[K,V], cmp: (K,K) => Int, key: K, value: V): BST[K,V] = {
+    t match {
+      case Leaf => Node(key, value, Leaf, Leaf)
+      case Node(k, v, lt, rt) =>
+        k match {
+          case _ if cmp(key, k) < 0 => Node(k, v, insert(lt, cmp, key, value), rt)
+          case _ => Node(k, v, lt, insert(rt, cmp, key, value))
+        }
+    }
+  }
 
   /** Problem 2: Expression Optimization
     * 
@@ -86,5 +105,43 @@ object Assignment2A:
     * - You must handle all cases defined in the `Expr` enum.
     * - Catch and handle division by zero cases appropriately. (See test cases for hint.)
     */
-  def optimize(expr: Expr): Expr = ???
+
+
+  def optimize(expr: Expr): Expr = {
+    expr match {
+      case Num(n) => Num(n)
+      case Var(x) => Var(x)
+      case Add(f1, f2) =>
+        (optimize(f1), optimize(f2)) match {
+          case (Num(n1), Num(n2)) => Num(n1 + n2)
+          case (Num(0), e2) => e2          // 0 + x → x
+          case (e1, Num(0)) => e1          // x + 0 → x
+          case (e1, e2) => Add(e1, e2)
+        }
+      case Sub(f1, f2) =>
+        (optimize(f1), optimize(f2)) match {
+          case (Num(n1), Num(n2)) => Num(n1 - n2)
+          case (e1, Num(0)) => e1          // x - 0 → x
+          case (e1, e2) => Sub(e1, e2)
+        }
+      case Mul(f1, f2) =>
+        (optimize(f1), optimize(f2)) match {
+          case (Num(n1), Num(n2)) => Num(n1 * n2)
+          case (e1, Num(0)) => Num(0) // x * 0 -> 0
+          case (Num(0), e2) => Num(0) // 0 * x -> 0
+          case (e1, Num(1)) => e1 // x * 1  → x
+          case (Num(1), e2) => e2 // 1 * x  → x
+          case (e1, e2) => Mul(e1, e2)
+        }
+      case Div(f1, f2) =>
+        (optimize(f1), optimize(f2)) match {
+          case (e1, Num(0)) => throw new ArithmeticException
+          case (Num(n1), Num(n2)) => Num(n1 / n2)
+          case (e1, Num(1)) => e1 // x / 1 -> x
+          case (e1, e2) => Div(e1, e2)
+        }
+
+
+    }
+  }
   

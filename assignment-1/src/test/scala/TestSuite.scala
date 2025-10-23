@@ -24,6 +24,7 @@ class TestSuite extends munit.FunSuite {
   }
 
   test("problem 2") {
+    assertEquals(combination(7, 2), 21L)
     assertEquals(combination(0, 0), 1L)
     assertEquals(combination(1, 0), 1L)
     assertEquals(combination(2, 1), 2L)
