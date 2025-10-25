@@ -63,9 +63,30 @@ object Midterm1:
     *   See TestSuite.scala file for examples. 
     * ex: ... = foldList[A,B](...)
     */ 
-  def foldList[A,B](x: B, f: (A,B) => B): IList[A] => B = ???
-  
-  def concat[A](l1: IList[A], l2: IList[A]): IList[A] = ???
+  def foldList[A,B](x: B, f: (A,B) => B): IList[A] => B = {
+    def fold(xs: IList[A]): B = {
+      @tailrec def foldInside(xs1: IList[A], result: B) : B = {
+        xs1 match {
+          case INil => result
+          case ICons(head, tail) => foldInside(tail, f(head, result))
+        }
+      }
+      foldInside(xs, x)
+    }
+    fold _
+  }
+
+
+  def concat[A](l1: IList[A], l2: IList[A]): IList[A] = {
+    def mergeList(mainList: IList[A]) : IList[A] = {
+      mainList match {
+        case INil => l2
+        case ICons(head, tail) => ICons(head, mergeList(tail))
+        // 재귀 결과를 이용해 새로운 값을 만들어내면 tail recursion이 아님
+      }
+    }
+    mergeList(l1)
+  }
 
   /** Problem 1-2: Binary Tree Fold (20 Points)
     * 
@@ -87,7 +108,24 @@ object Midterm1:
     * 
     * After that, implement a function isInBintree that checks whether the given value exists in the BinTree, using foldBinTree.
     */ 
-  def foldBinTree[A,B] (x: B, f: (A,B,B) => B): BinTree[A] => B = ???
+  def foldBinTree[A,B] (x: B, f: (A,B,B) => B): BinTree[A] => B = {
+    def fold(bt: BinTree[A]): B = {
+      bt match {
+        case Leaf => x
+        case Node(v, l, r) => f(v, fold(l), fold(r))
+      }
+    }
+    fold _
+  }
 
-  def isInBinTree[A] (x: A, bt: BinTree[A]): Boolean = ???
+
+  def isInBinTree[A] (x: A, bt: BinTree[A]): Boolean = {
+    def check(bt1: BinTree[A]): Boolean = {
+      bt1 match {
+        case Leaf => false
+        case Node(v, l, r) => (v == x) || check(l) || check(r)
+      }
+    }
+    check(bt)
+  }
   
