@@ -39,12 +39,31 @@ object Midterm2:
     * 
     * For example, reverse(ICons(1, ICons(2, ICons(3, INil)))) = ICons(3, ICons(2, ICons(1, INil)))
     */
-  def reverseTail[A](x: IList[A]): IList[A] = ???
+  def reverseTail[A](x: IList[A]): IList[A] = {
+    @tailrec def reverse(x1: IList[A], result: IList[A]): IList[A] = {
+      x1 match {
+        case INil => result
+        case ICons(h, t) => reverse(t, ICons(h, result))
+      }
+    }
+    reverse(x, INil)
+  }
       
   /** Problem 2-2: Fold in List (20 Points)
     * 
     * Implement a fold function of IList (that of problem 1-1) with tail recursion. 
     */ 
-  def foldListTail[A,B](x: B, f: (A,B) => B): IList[A] => B = ???
+  def foldListTail[A,B](x: B, f: (A,B) => B): IList[A] => B = {
+    def foldList(l1: IList[A]): B = {
+      @tailrec def fold(l2: IList[A], result: B): B = {
+        l2 match {
+          case INil => result
+          case ICons(h, t) => fold(t, f(h, result))
+        }
+      }
+      fold(reverseTail(l1), x)
+    }
+    foldList _
+  }
 
   

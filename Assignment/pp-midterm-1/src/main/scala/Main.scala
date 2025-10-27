@@ -63,10 +63,20 @@ object Midterm1:
     *   See TestSuite.scala file for examples. 
     * ex: ... = foldList[A,B](...)
     */ 
-  def foldList[A,B](x: B, f: (A,B) => B): IList[A] => B = ???
+  def foldList[A,B](x: B, f: (A,B) => B): IList[A] => B = {
+    def fold(listA: IList[A]): B = {
+      listA match {
+        case INil => x // l2
+        case ICons(h, t) => f(h, fold(t)) // f: ICons(h,, fold(t))
+      }
+    }
+    fold _
+  }
 
 
-  def concat[A](l1: IList[A], l2: IList[A]): IList[A] = ???
+  def concat[A](l1: IList[A], l2: IList[A]): IList[A] = {
+    foldList[A, IList[A]](l2, (a, tailList) => ICons(a, tailList))(l1)
+  }
 
   /** Problem 1-2: Binary Tree Fold (20 Points)
     * 
@@ -88,7 +98,17 @@ object Midterm1:
     * 
     * After that, implement a function isInBintree that checks whether the given value exists in the BinTree, using foldBinTree.
     */ 
-  def foldBinTree[A,B] (x: B, f: (A,B,B) => B): BinTree[A] => B = ???
+  def foldBinTree[A,B] (x: B, f: (A, => B, => B) => B): BinTree[A] => B = {
+    def fold(bt: BinTree[A]): B = {
+      bt match {
+        case Leaf => x
+        case Node(v, l, r) => f(v, fold(l), fold(r))
+      }
+    }
+    fold _
+  }
 
 
-  def isInBinTree[A] (x: A, bt: BinTree[A]): Boolean = ???
+  def isInBinTree[A] (x: A, bt: BinTree[A]): Boolean = {
+    foldBinTree[A, Boolean](false, (a, b, c) => (a==x || b || c))(bt)
+  }

@@ -43,14 +43,20 @@ object Assignment1:
     * 
     * Here n is restricted by n<=50.
     */
-  def iteration(f: Long => Long, n: Long, x: Long): Long = ???
+  def iteration(f: Long => Long, n: Long, x: Long): Long = {
+    if (n < 1) x
+    else f(iteration(f, n-1, x))
+  }
   /** Problem 1-2.
     *
     * Given a function f and integers n, x,
     * compute f^n(x) as: if n>=1, then f^(n-1) (f(x)); otherwise x
     * using tail recursion.
     */
-  def iterationTail(f: Long => Long, n: Long, x: Long): Long = ???
+  @tailrec def iterationTail(f: Long => Long, n: Long, x: Long): Long = {
+    if (n < 1) x
+    else iterationTail(f, n-1, f(x))
+  }
   
   /** Problem 2: Computing Combinations.
     *
@@ -63,7 +69,15 @@ object Assignment1:
     * Hint 1: combination(n, i) = combination(n, n-i).
     * Hint 2: reordering multiplications and divisions can prevent overflow.
     */
-  def combination(n: Long, i: Long): Long = ???
+  def combination(n: Long, i: Long): Long = {
+    @tailrec def comb(n1: Long, i1: Long, result: Long): Long = {
+      if (n1 > n) return result
+      else comb(n1+1, i1+1, result * n1 / i1)
+    }
+
+    if (i <= n/2) comb(n-i+1, 1, 1)
+    else comb(i+1, 1, 1)
+  }
   /** Problem 3: Finding Prime Numbers.
     */
 
@@ -71,7 +85,14 @@ object Assignment1:
     *
     * Find out whether the given natural number is a prime number.
     */
-  def isPrime(p: Long): Boolean = ???
+  def isPrime(p: Long): Boolean = {
+    @tailrec def isP(i: Long): Boolean = {
+      if (i > p/i) true
+      else if (p % i == 0) false
+      else isP(i+1)
+    }
+    isP(2)
+  }
 
   /** Problem 3-2.
     *
@@ -85,9 +106,18 @@ object Assignment1:
     * See the website below for more information.
     *   - https://en.wikipedia.org/wiki/Twin_prime
     */
-  def isTwinPrime(p: Long): Boolean = ???
+  def isTwinPrime(p: Long): Boolean = {
+    isPrime(p) && isPrime(p+2)
+  }
 
-  def nthTwinPrime(n: Long): Long = ???
+  def nthTwinPrime(n: Long): Long = {
+    @tailrec def nTPrime(pNow: Long, i: Long): Long = {
+      if (isTwinPrime(pNow) == false) nTPrime(pNow + 1, i)
+      else if (i + 1 == n) pNow
+      else nTPrime(pNow + 1, i + 1)
+    }
+    nTPrime(2, 0)
+  }
   /** Problem 3-3.
     *
     * Given an integer n, find two prime numbers whose sum is n.
@@ -104,5 +134,12 @@ object Assignment1:
     */
   class NoExistException(val arg: Long) extends Exception
 
-  def primePair(n: Long): (Long, Long) = ???
+  def primePair(n: Long): (Long, Long) = {
+    @tailrec def primeP(i: Long): (Long, Long) = {
+      if (i > n/2) throw new NoExistException(n)
+      else if (isPrime(i) && isPrime(n-i)) (i, n-i)
+      else primeP(i+1)
+    }
+    primeP(2)
+  }
 
