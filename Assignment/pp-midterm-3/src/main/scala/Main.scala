@@ -70,45 +70,9 @@ object Midterm3:
    * Input will be given as same form, too. 
    */
 
-  def abs(a: Int): Int = {
-    if (a < 0) -a
-    else a
-  }
 
-  def gcd(a: Int, b: Int): Int = {
-    val aPos = abs(a)
-    val bPos = abs(b)
-    def gcd_inside(dNow: Int, result: Int): Int = {
-      if (dNow > aPos || dNow > bPos) result
-      else {
-        if (aPos % dNow == 0 && bPos % dNow == 0) gcd_inside(dNow+1, dNow)
-        else gcd_inside(dNow+1, result)
-      }
-    }
-    gcd_inside(1, 1)
-  }
-  def addRational(x: Rational, y: Rational): Rational = {
-    (x, y) match {
-      case ((a, 0), (c, d)) => throw new DividedByZeroException("")
-      case ((a, b), (c, 0)) => throw new DividedByZeroException("")
-      case ((a, b), (c, d)) => {
-        val gcdCal = gcd((a*d + b*c), b*d)
-        ((a*d + b*c)/gcdCal, (b*d)/gcdCal)
-      }
-      // 분자: a*d + b*c , 분모: b*d
-    }
-  }
-  def subRational(x: Rational, y: Rational): Rational = {
-    (x, y) match {
-      case ((a, 0), (c, d)) => throw new DividedByZeroException("")
-      case ((a, b), (c, 0)) => throw new DividedByZeroException("")
-      case ((a, b), (c, d)) => {
-        val gcdCal = gcd((a*d - b*c), b*d)
-        ((a*d - b*c)/gcdCal, b*d/gcdCal)
-      }
-      // 분자: a*d - b*c , 분모: b*d
-    }
-  }
+  def addRational(x: Rational, y: Rational): Rational = ???
+  def subRational(x: Rational, y: Rational): Rational = ???
   def mulRational(x: Rational, y: Rational): Rational = ???
   def divRational(x: Rational, y: Rational): Rational = ???
 
