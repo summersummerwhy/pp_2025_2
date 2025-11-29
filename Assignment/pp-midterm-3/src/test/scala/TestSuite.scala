@@ -47,8 +47,9 @@ class TestSuite extends munit.FunSuite {
       eval[Int](e, addInt, subInt, mulInt, divInt)
     def testInt(e: Expr[Int], r: Result[Int]) = 
       assertEquals(evalInt(e), r)
+
     testInt(
-      Add(Num(5), Div(Num(3), Sub(Num(3), Num(2)))), 
+      Add(Num(5), Div(Num(3), Sub(Num(3), Num(2)))),
       Success(8)
     )
     testInt(

@@ -62,9 +62,66 @@ object Assignment2B:
    */
    def solveSudoku(board: Array[Int]): IOption[Array[Int]] = {
     val N = 9
-    def convertIndex(row: Int, col: Int): Int = row * N + col
-    def getElement(board: Array[Int], row: Int, col: Int): Int = 
-      board(convertIndex(row, col))
-    def updateElement(board: Array[Int], row: Int, col: Int, num: Int): Unit = 
-      board(convertIndex(row, col)) = num
+    def getIndex(row: Int, col: Int): Int =
+      row * N + col
+    def getElement(board: Array[Int], index: Int): Int =
+      board(index)
+    def updateElement(board: Array[Int], index: Int, num: Int): Unit =
+      board(index) = num
+
+
+    def isSafe(board: Array[Int], indexNow: Int, numNow: Int): Boolean = {
+
+      val col = indexNow % N
+      val row = indexNow / N
+      val gridRow = (row / 3) * 3
+      val gridCol = (col / 3) * 3
+
+      @tailrec def isColSafe(indexI: Int): Boolean = {
+        if (indexI > 80) true
+        else if (indexI != indexNow && getElement(board, indexI) == numNow) false
+        else isColSafe(indexI + 9)
+      }
+
+      @tailrec def isRowSafe(indexI: Int): Boolean = {
+        if (indexI / N > row) true
+        else if (indexI != indexNow && getElement(board, indexI) == numNow) false
+        else isRowSafe(indexI + 1)
+      }
+
+      @tailrec def isGridSafe(count: Int, indexI: Int): Boolean = {
+        if (count > 8) true
+        else if (indexI != indexNow && getElement(board, indexI) == numNow) false
+        else if ((count+1) % 3 == 0) isGridSafe(count + 1, indexI + 7)
+        else isGridSafe(count + 1, indexI + 1)
+      }
+
+      isColSafe(col) && isRowSafe(row * N) && isGridSafe(0, gridCol + gridRow * N)
+    }
+
+
+   def canWrite(board: Array[Int], index: Int, num: Int): Boolean = {
+     if (index > 80) true
+     else if (getElement(board, index) != 0) {
+       if (isSafe(board, index, getElement(board, index))) canWrite(board, index+1, 1)
+       else false
+     }
+     else if (num > 9) false
+     else if (isSafe(board, index, num)) {
+       updateElement(board, index, num)
+       if (canWrite(board, index+1, 1)) true
+       else {
+         updateElement(board, index, 0)
+         canWrite(board, index, num+1)
+       }
+     }
+     else canWrite(board, index, num+1)
    }
+
+  if (canWrite(board, 0, 1)) ISome(board)
+  else INone
+
+  }
+
+
+

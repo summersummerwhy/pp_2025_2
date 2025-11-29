@@ -6,13 +6,14 @@ import pp202402.midterm1.Midterm1.{
 }
 import pp202402.midterm1.{IList, BinTree}
 
-class TestSuite extends munit.FunSuite {
+class BTestSuite extends munit.FunSuite {
   import IList.*
   import BinTree.* 
 
   test("problem 1-1") {
     assertEquals(foldList[Int,Int](0, _+_)(ICons(1, ICons(2, ICons(3, ICons(4, ICons(5, ICons(6, INil))))))), 21)
     assertEquals(foldList[Int,Int](1, _*_)(ICons(1, ICons(2, ICons(3, ICons(4, ICons(5, ICons(6, INil))))))), 720)
+    assertEquals(foldList[Int, Int](0, _ - _)(ICons(15, ICons(5, ICons(4, ICons(3, ICons(2, ICons(1, INil))))))), 12)
     assertEquals(
       concat(
         ICons(1, ICons(3, ICons(5, INil))), 
