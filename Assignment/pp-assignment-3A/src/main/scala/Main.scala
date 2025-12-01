@@ -84,4 +84,80 @@ object Assignment3A:
    *
    */
 
-  def decSqrt(n: LazyList[Int], len: Int): LazyList[Int] = ???
+  def decSqrt(n: LazyList[Int], len: Int): LazyList[Int] = {
+    // parameters
+    // 1. p (0이 초기값, 지금 p에 10 곱해서 max x 더한 다음 loop으로 넘김)
+    // 2. lim (맨 앞자리수가 초기값, 100 * (지금 lim - 지금 y) + 남은 두자리수) 더해서 다음으로 넘김
+    // 3. len_now
+    // 4. num_list
+    // 5. result
+    // inside
+    // 1. x: 1~9까지, x(20*p + x) > lim인 순간 x-1을 x값으로 확정
+    // 2. 그때 y값 계산하기
+    // 4. 다음의 p, lim, result 계산
+    // 5. 현재 list에서 두개 빼기 (없으면 INil)
+    // 6. 다음 loop로 넘기기
+
+    def calY(x: Int, p: Int): Int = {
+      x * (20 * p + x)
+    }
+
+    @tailrec def findX(x: Int, p: Int, lim: Int): Int = {
+      if (calY(x, p) > lim) x - 1
+      else if (x == 9) x
+      else findX(x + 1, p, lim)
+    }
+
+    def findNextP(p: Int, lim: Int): Int = {
+      10 * p + findX(0, p, lim)
+    }
+
+
+    def findNextLim(lim: Int, y: Int, num_list: LazyList[Int]): Int = {
+      num_list.get match {
+        case None => 100 * (lim - y)
+        case Some(hd, tl) =>
+          tl.get match {
+            case None => 100 * (lim - y) + 10 * hd
+            case Some(hd2, tl2) => 100 * (lim - y) + 10 * hd + hd2
+          }
+      }
+    }
+
+
+
+    def eliminateN(num_list: LazyList[Int], count: Int): LazyList[Int] = {
+      @tailrec def eliminate(list_now: LazyList[Int], count_now: Int): LazyList[Int] = {
+        if (count_now == count) list_now
+        else {
+          list_now.get match {
+            case None => LNil()
+            case Some(hd, tl) =>
+              eliminate(tl, count_now+1)
+          }
+        }
+      }
+      eliminate(num_list, 0)
+    }
+
+
+    @tailrec def dec(len_now: Int, num_list: LazyList[Int], result: LazyList[Int], p: Int, lim: Int): LazyList[Int] = {
+      printf("p: %d, lim: %d\n", p, lim)
+      if (len < len_now) result
+      else {
+        val x = findX(0, p, lim)
+        val y = calY(x, p)
+        val next_p = 10 * p + x
+        val next_lim = findNextLim(lim, y, num_list)
+        val next_result = result.append(LCons(x, LNil()))
+        dec(len_now + 1, eliminateN(num_list, 2), next_result, next_p, next_lim)
+      }
+
+    }
+
+    n.get match {
+      case None => LNil()
+      case Some(h, t) => dec(0, t, LNil(), 0, h)
+    }
+
+  }
