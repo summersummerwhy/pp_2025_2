@@ -58,9 +58,20 @@ object Assignment3B:
    */
   class OmokState(board: MyArray[String], currentPlayer: Player) extends State[String](board, currentPlayer, 5, 5):
     // TODOs start here //
-    def fillCell(i: Int, j: Int, v: String): OmokState = ???
+    def fillCell(i: Int, j: Int, v: String): OmokState = {
+      // fills the cell at the given row and column with the given value
+      if i < 0 || i >= 5 || j < 0 || j >= 5 then
+        throw BoardOutOfBoundsException("Board out of bounds")
+      val board_updated = board.update(i * 5 + j, v)
+      new OmokState(board_updated, currentPlayer)
+    }
 
-    def nextTurn(): OmokState = ???
+    def nextTurn(): OmokState = {
+      currentPlayer.match {
+        case Player.Player1 => new OmokState(board, Player.Player2)
+        case Player.Player2 => new OmokState(board, Player.Player1)
+      }
+    }
       
   /** Omok rule.
    * 
@@ -82,17 +93,56 @@ object Assignment3B:
     // TODO: Implement the renderInput method for the Omok game.
     // Render a input character into a string value. A valid input should be either 'O' or 'X'.
     // If the input is not valid, throw an InvalidInputException.
-    def renderInput(input: Char): String = ???
+    def renderInput(input: Char): String = {
+      input match {
+        case 'O' | 'X' => input.toString
+        case _ => throw InvalidInputException("input not O X")
+      }
+    }
     
     // TODO: Implement the isAvailableValue method for the Omok game.
     // - check1 if the value is valid. A valid value should be either "O" or "X".
-    def isAvailableValue(v: String): Boolean = ???
+    def isAvailableValue(v: String): Boolean = {
+      v match {
+        case "O" | "X" => true
+        case _ => false
+      }
+    }
 
     // TODO: Implement the isStateValid method for the Omok game.
     // Given a current state with a board and the current player, 
     // check if the state is consistent
     // - hint: think about how many pieces each player can have on the board when they take turns.
-    def isStateValid(state: State[String]): Boolean = ???
+    def isStateValid(state: State[String]): Boolean = {
+      // 참고할 수 있는 것: getPlayer, getNRows, getNCols, getCell, nextTurn
+      // player 1: O수, X수 같아야함
+      // player 2: O수가 X수보다 하나 커야함
+
+      @tailrec def checkPieces(row: Int, col: Int, p1_num: Int, p2_num: Int): Boolean = {
+        if (row == state.getNRows()) {
+          state.getPlayer() match {
+            case Player.Player1 => {
+              if (p1_num == p2_num) true
+              else false
+            }
+            case Player.Player2 => {
+              if (p1_num == p2_num + 1) true
+              else false
+            }
+          }
+        }
+        else if (col == state.getNCols()) checkPieces(row + 1, 0, p1_num, p2_num)
+        else {
+          state.getCell(row, col) match {
+            case "O" => checkPieces(row, col + 1, p1_num + 1, p2_num)
+            case "X" => checkPieces(row, col + 1, p1_num, p2_num + 1)
+            case _ => checkPieces(row, col + 1, p1_num, p2_num)
+          }
+        }
+      }
+
+      checkPieces(0, 0, 0, 0)
+    }
 
     // TODO: Implement the isNextMoveValid method for the Omok game.
     // Given a current state with a board, the current player, 
@@ -100,12 +150,88 @@ object Assignment3B:
     // check if the next move is valid.
     // - check1: you cannot put a piece on a cell that is already filled.
     // - check2: you cannot put a piece on a cell if the game is already done.
-    def isNextMoveValid(state: State[String], i: Int, j: Int, v: String): Boolean = ???
+    def isNextMoveValid(state: State[String], i: Int, j: Int, v: String): Boolean = {
+      val inBounds =
+        0 <= i && i < state.getNRows() &&
+          0 <= j && j < state.getNCols()
+
+      val empty = state.getCell(i, j) == initValue()
+
+      val correctTurn =
+        state.getPlayer() match
+          case Player.Player1 => v == player1  // O 차례면 O만
+          case Player.Player2 => v == player2  // X 차례면 X만
+
+      inBounds && empty && !isDone(state) && correctTurn
+    }
 
     // TODO: Implement the isDone method for the Omok game.
     // Given a current state with a board, check if the game is done.
     // The game is done if one player wins or the board is full.
-    def isDone(state: State[String]): Boolean = ???
+    def isDone(state: State[String]): Boolean = {
+      // check rows
+      def checkRow(): Boolean = {
+        @tailrec def checkRowI(row: Int, col: Int, consec: Int, consec_type: String): Boolean = {
+          if (consec == 5) true
+          else if (row == 5) false
+          else if (col == 5) checkRowI(row + 1, 0, 0, initValue())
+          else {
+            val now_type = state.getCell(row, col)
+            if (now_type != initValue() && now_type == consec_type) checkRowI(row, col + 1, consec + 1, consec_type)
+            else checkRowI(row, col + 1, 1, now_type)
+          }
+        }
+        checkRowI(0, 0, 0, initValue())
+      }
+      // check cols
+      def checkCol(): Boolean = {
+        @tailrec def checkColI(row: Int, col: Int, consec: Int, consec_type: String): Boolean = {
+          if (consec == 5) true
+          else if (col == 5) false
+          else if (row == 5) checkColI(0, col + 1, 0, initValue())
+          else {
+            val now_type = state.getCell(row, col)
+            if (now_type != initValue() && now_type == consec_type) checkColI(row + 1, col, consec + 1, consec_type)
+            else checkColI(row + 1, col, 1, now_type)
+          }
+        }
+
+        checkColI(0, 0, 0, initValue())
+      }
+      // check diagonals
+      def checkDiag(): Boolean = {
+        @tailrec def checkDownRight(i: Int, gap: Int, consec: Int, consec_type: String): Boolean = {
+          if (consec == 5) true
+          else if (i == 5) false
+          else {
+            val now_type = state.getCell(i, i + gap)
+            if (now_type != initValue() && now_type == consec_type) checkDownRight(i + 1, gap, consec + 1, consec_type)
+            else checkDownRight(i + 1, gap, 1, now_type)
+          }
+        }
+
+        @tailrec def checkUpRight(i: Int, sum: Int, consec: Int, consec_type: String): Boolean = {
+          if (consec == 5) true
+          else if (i == 5) false
+          else {
+            val now_type = state.getCell(i, sum - i)
+            if (now_type != initValue() && now_type == consec_type) checkUpRight(i + 1, sum, consec + 1, consec_type)
+            else checkUpRight(i + 1, sum, 1, now_type)
+          }
+        }
+
+        checkDownRight(0, 0, 0, initValue()) || checkUpRight(0, 4, 0, initValue())
+      }
+
+      @tailrec def checkFull(row: Int, col: Int): Boolean = {
+        if (row == 5) true
+        else if (col == 5) checkFull(row + 1, 0)
+        else if (state.getCell(row, col) == initValue()) false
+        else checkFull(row, col + 1)
+      }
+
+      checkRow() || checkCol() || checkDiag() || checkFull(0, 0)
+    }
 
   /** Sudoku game.
    * 
@@ -191,4 +317,10 @@ object Assignment3B:
     // Given the row, column, and value (Char) the player wants to put on the board,
     // check if the move is valid and update the game state.
     // If the move is not valid, throw an InvalidMoveException.
-    def makeMove(i: Int, j: Int, v: Char): GameController[A] =  ???
+    def makeMove(i: Int, j: Int, v: Char): GameController[A] = {
+      if (rule.isStateValid(state) && rule.isNextMoveValid(state, i, j, rule.renderInput(v))) {
+        val updatedState = state.fillCell(i, j, rule.renderInput(v))
+        new GameController[A](rule, updatedState.nextTurn(), viewController)
+      }
+      else throw InvalidMoveException("Invalid Move!")
+    }
