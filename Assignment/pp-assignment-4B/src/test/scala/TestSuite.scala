@@ -38,15 +38,15 @@ class TestSuite extends munit.FunSuite {
     assertEquals(log1, "Int: #3")
     assertEquals(uQ4, IList.ICons(1, IList.INil))
     assertEquals(nQ4, IList.ICons(2, IList.ICons(2, IList.INil)))
-    
+
     val (log2, uQ5, nQ5) = processTask(uQ4, nQ4)
     assertEquals(log2, "Int: #1")
     assertEquals(uQ5, IList.INil)
     assertEquals(nQ5, IList.ICons(2, IList.ICons(2, IList.INil)))
 
     val (log3, uQ6, nQ6) = processTask(uQ5, nQ5)
-    assertEquals(log3, "Int: #2")
-    assertEquals(uQ6, IList.ICons(1, IList.INil))
+    assertEquals(log3, "Int: #2") // ㅠ
+    assertEquals(uQ6, IList.ICons(1, IList.INil)) // but INil
     assertEquals(nQ6, IList.ICons(2, IList.INil))
 
     val (log4, uQ7, nQ7) = processTask(uQ6, nQ6)
@@ -109,7 +109,7 @@ class TestSuite extends munit.FunSuite {
     assertEquals(log1, "List: #3")
     assertEquals(uQ1, IList.INil)
     assertEquals(nQ1, IList.ICons(IList.ICons(2, IList.ICons(2, IList.ICons(1, IList.INil))), IList.INil))
-    
+
     val (log2, uQ2, nQ2) = processTask(uQ1, nQ1)
     assertEquals(log2, "List: #2")
     assertEquals(uQ2, IList.ICons(IList.ICons(1, IList.ICons(2, IList.ICons(1, IList.INil))), IList.INil))

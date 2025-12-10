@@ -52,11 +52,11 @@ object Assignment4B:
     * 
     * The queue should process tasks in the following manner:
     *     
-    * - Tasks should be enqueued with the `addTask` method. 
-    *   If a given task is urgent, it should be enqueued to the urgent priority queue. 
-    *   If a given task is normal, it should be enqueued to the normal priority queue. 
+    * - Tasks should be enqueued with the `addTask` method.
+    *   If a given task is urgent, it should be enqueued to the urgent priority queue.
+    *   If a given task is normal, it should be enqueued to the normal priority queue.
     *   If a given task does not have a priority, it should not be enqueued.
-    * 
+    *
     * - Tasks should be dequeued and enqueued again when necessary with the `processTask` method.
     *   
     *   Processing a task regarding its priority:
@@ -82,9 +82,55 @@ object Assignment4B:
 
   // TODO: Implement `addTask`.
   def addTask[Q, I, A](uQ: Q, nQ: Q, task: I)
-    (implicit QUEUE: Queue[Q, I], TASK: Task[I, A]): (Q, Q) = ???
+    (implicit QUEUE: Queue[Q, I], TASK: Task[I, A]): (Q, Q) = {
+    // Q: queue 적용 가능
+    // [I, A]:  [Int, Int] [IList[A], A]
+    // urgent to uQ, normal to nQ, no priority -> nope
+
+    TASK.getPriority(task) match {
+      case IOption.INone => (uQ, nQ)
+      case IOption.ISome(p) =>
+        p match {
+          case Priority.Urgent => (QUEUE.enqueue(uQ, task), nQ)
+          case Priority.Normal => (uQ, QUEUE.enqueue(nQ, task))
+        }
+    }
+
+  }
     
   // TODO: Implement `processTask`.
   def processTask[Q, I, A](uQ: Q, nQ: Q)
-    (implicit QUEUE: Queue[Q, I], TASK: Task[I, A]): (String, Q, Q) = ???
+    (implicit QUEUE: Queue[Q, I], TASK: Task[I, A]): (String, Q, Q) = {
+    // 1. 일단 uQ부터 처리
+    val (d1, updatedUQ) = QUEUE.dequeue(uQ)
+
+    d1 match {
+      case IOption.ISome(task1) =>
+        val prTask1 = TASK.process(task1)
+        TASK.getPriority(prTask1) match {
+          case IOption.INone => (TASK.log(task1), updatedUQ, nQ)
+          case IOption.ISome(p) =>
+            p match {
+              case Priority.Urgent => (TASK.log(task1), QUEUE.enqueue(updatedUQ, prTask1), nQ)
+              case Priority.Normal => (TASK.log(task1), updatedUQ, QUEUE.enqueue(nQ, prTask1))
+            }
+        }
+      case IOption.INone =>
+        val (d2, updatedNQ) = QUEUE.dequeue(nQ)
+        d2 match {
+          case IOption.ISome(task2) =>
+            val prTask2 = TASK.process(task2)
+            TASK.getPriority(prTask2) match {
+              case IOption.INone => (TASK.log(task2), uQ, updatedNQ)
+              case IOption.ISome(p) =>
+                p match {
+                  case Priority.Urgent => (TASK.log(task2), QUEUE.enqueue(uQ, prTask2), updatedNQ)
+                  case Priority.Normal => (TASK.log(task2), uQ, QUEUE.enqueue(updatedNQ, prTask2))
+                }
+            }
+          case IOption.INone => (EMPTY_LOG, uQ, nQ)
+        }
+    }
+
+  }
     
