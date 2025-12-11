@@ -1,6 +1,4 @@
 use crate::list::{List, List::*};
-
-/// Implement applyfg.
 ///
 /// This function takes a list, two functions, and another list as input.
 /// The implementation should follow these steps:
@@ -12,7 +10,20 @@ use crate::list::{List, List::*};
 ///
 /// Note: The variable names such as s and r are used for clarity in the explanation. You do not have to use the same variable names.
 pub fn applyfg<T, S, R>(l: List<T>, f: fn(T) -> S, g: fn(&List<T>, S) -> R) -> List<R> {
-    todo!()
+    // if l is Nil -> Nil
+    // if l is Cons(head, tail)
+    // 1. s = f(head)
+    // 2. r = g(tail, s)
+    // 3. (r, applyfg(tail, f, g))
+    match l {
+        List::Nil => List::new(),
+        List::Cons(hd, tl) => {
+            let s = f(hd);
+            let r = g(&tl, s);
+            List::cons(r, applyfg(*tl, f, g))
+        }
+    }
+
 }
 
 /// Implement applyfg_puzzle.
@@ -29,7 +40,24 @@ pub fn applyfg<T, S, R>(l: List<T>, f: fn(T) -> S, g: fn(&List<T>, S) -> R) -> L
 /// Note: The variable names such as s and r are used for clarity in the explanation. You do not have to use the same variable names.
 ///       Input f will always be a pure function.
 pub fn applyfg_puzzle<T, S>(l: List<T>, f: fn(&T) -> S, g: fn(List<T>, S) -> List<T>) -> List<S> {
-    todo!()
+    // if l is Nil -> Nil
+    // if l is Cons(hd, tl)
+    // 1. s = f(&hd)
+    // 2. t = g(l, s)
+        // if t is Nil -> s
+        // if t is Cons -> applyfg_puzzle(t, f, g)
+    match l {
+        List::Nil => List::new(),
+        List::Cons(hd, tl) => {
+            let s1 = f(&hd);
+            let s2 = f(&hd);
+            let t = g(List::cons(hd, *tl), s1);
+            match t {
+                List::Nil => List::cons(s2, List::new()),
+                other => applyfg_puzzle(other, f, g)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
