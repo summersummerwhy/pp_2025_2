@@ -11,16 +11,11 @@ use crate::list::{List, List::*};
 /// Note: The variable names such as s and r are used for clarity in the explanation. You do not have to use the same variable names.
 pub fn applyfg<T, S, R>(l: List<T>, f: fn(T) -> S, g: fn(&List<T>, S) -> R) -> List<R> {
     match l {
-        // 1. l: Nil -> Nil
         List::Nil => List::new(),
-        // 2. l: Const(head, tail
-        // s: S = f(head)
-        // r: S = g(&tail, s)
-        // List::Cons(r, apply(tail, f, g))
-        List::Cons(head, tail) => {
-            let s = f(head);
-            let r = g(&tail, s);
-            List::cons(r, applyfg(*tail, f, g))
+        List::Cons(hd, tl) => {
+            let s = f(hd);
+            let r = g(&tl, s);
+            List::cons(r, applyfg(*tl, f, g))
         }
     }
 }
@@ -40,21 +35,14 @@ pub fn applyfg<T, S, R>(l: List<T>, f: fn(T) -> S, g: fn(&List<T>, S) -> R) -> L
 ///       Input f will always be a pure function.
 pub fn applyfg_puzzle<T, S>(l: List<T>, f: fn(&T) -> S, g: fn(List<T>, S) -> List<T>) -> List<S> {
     match l {
-        // 1. l == Nil => Nil
         List::Nil => List::new(),
-        // 2. l == Cons(head, tail)
-        // s1: S = f(&head)
-        // s2: S = f(&head)
-        // t: List<T> = g(List::cons(head, *tail), s1)
-        // 2-1. t == Nil => List::cons(s2, Nil)
-        // 2-2. t == rest => applyfg_puzzle(rest, f, g)
-        List::Cons(head, tail) => {
-            let s = f(&head);
-            let s_copy = f(&head);
-            let t = g(List::cons(head, *tail), s);
+        List::Cons(hd, tl) => {
+            let s = f(&hd);
+            let s_cloned = f(&hd);
+            let t = g(List::cons(hd, *tl), s);
             match t {
-                List::Nil => List::cons(s_copy, List::new()),
-                rest => applyfg_puzzle(rest, f, g),
+                List::Nil => List::cons(s_cloned, List::new()),
+                rest => applyfg_puzzle(rest, f, g)
             }
         }
     }
